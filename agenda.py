@@ -1,15 +1,4 @@
 AGENDA = {}
-AGENDA["carlos"] = {
-  "telefone":" 9999-4675",
-  "email":" carlos@email.com",
-  "endereco": "Av. 1",
-}
-
-AGENDA["joao"] = {
-  "telefone":" 9769-4675",
-  "email":" joao@email.com",
-  "endereco": "Av. 2",
-}
 
 def mostrar_contatos():
   if AGENDA:
@@ -43,11 +32,13 @@ def incluir_editar_contato(contato,  telefone,email,endereco):
     "email": email,
     "endereco":  endereco,
   }
+  salvar()
   print(f"Contato {contato} Cadastrado com sucesso")
   
 def excluir_contato(contato):
   try:
     AGENDA.pop(contato)
+    salvar()
     print(f"Contato {contato} excluido com sucesso")
   except KeyError:
     print("Contato inexistente")
@@ -65,10 +56,9 @@ def imprimir_menu():
   print("7 - Importar  contatos em CSV")
   print("0 - Fechar agenda \n")
   
-def exportar_contatos():
+def exportar_contatos(nome_arquivo):
     try:
-      with open("agenda.csv", 'w') as arquivo:
-        arquivo.write("nome,telefone,email,endereco\n")
+      with open(nome_arquivo, 'w') as arquivo:
         for contato in AGENDA:
           telefone = AGENDA[contato]['telefone']
           email = AGENDA[contato]['email']
@@ -92,10 +82,41 @@ def importar_contatos(nome_arquivo):
         incluir_editar_contato(nome, telefone, email, endereco)
         
   except FileNotFoundError:
-    print("Arquivo nãoencontrado")
+    print("Arquivo não encontrado")
   except Exception as error:
     print("Algum erro inesperado ocorreu")
     print(error)
+
+def salvar():
+  exportar_contatos('database.csv')
+  
+def carregar_contatos():
+  try:
+    with open('database.csv','r') as arquivo:
+      linhas = arquivo.readlines()
+      for linha in linhas:
+        detalhes = linha.strip().split(',')
+        nome = detalhes[0]
+        telefone = detalhes[1]
+        email = detalhes[2]        
+        endereco = detalhes[3]
+        
+        AGENDA[nome] = {
+          "telefone": telefone,
+          "email": email,
+          "endereco":  endereco,
+        }
+        
+        print("contatos carregados {}".format(len(AGENDA)))
+  
+  except FileNotFoundError:
+    print("Arquivo não encontrado")
+  except Exception as error:
+    print("Algum erro inesperado ocorreu")
+    print(error)
+  print("Database carregado com sucesso")
+
+carregar_contatos()
 
 while True:
   imprimir_menu()
@@ -128,7 +149,8 @@ while True:
     contato = input("Digite o nome do contato ")
     excluir_contato(contato)
   elif opcao == "6":
-    exportar_contatos()
+    nome_do_arquivo = input("Digite o nome do arquivo a ser exportado ")
+    exportar_contatos(nome_do_arquivo)
   elif opcao == "7":
     nome_do_arquivo = input("Digite o nome do arquivo a ser importado ")
     importar_contatos(nome_do_arquivo)
